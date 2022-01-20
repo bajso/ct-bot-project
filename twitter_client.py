@@ -35,3 +35,6 @@ def user_lookup():
         headers = ['id', 'name', 'username']
         writer.writerow(headers)
         writer.writerows(user_data_list)
+
+
+user_lookup()
