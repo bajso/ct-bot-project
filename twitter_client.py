@@ -8,8 +8,8 @@ from TwitterAPI import TwitterAPI, TwitterOAuth
 # Up to 512 characters long
 
 
-user_lookup_url = 'users/by/username/:<username>'
-user_timeline_url = 'users/:<id>/tweets'
+USER_LOOKUP_URL = 'users/by/username/:<username>'
+USER_TIMELINE_URL = 'users/:<id>/tweets'
 
 o = TwitterOAuth.read_file('twitter_secrets.txt')
 api = TwitterAPI(o.consumer_key, o.consumer_secret, o.access_token_key, o.access_token_secret, api_version='2')
@@ -23,7 +23,7 @@ def user_lookup():
 
     user_data_list = []
     for u in usernames:
-        r = api.request(user_lookup_url.replace('<username>', u))
+        r = api.request(USER_LOOKUP_URL.replace('<username>', u))
 
         for item in r:
             user_data_list.append([item['id'], item['name'], item['username']])

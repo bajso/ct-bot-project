@@ -1,3 +1,6 @@
+# courtesy of FTX
+# https://github.com/ftexchange/ftx/blob/master/rest/client.py
+
 import time
 import urllib.parse
 from typing import Optional, Dict, Any, List
