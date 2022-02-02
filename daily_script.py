@@ -16,7 +16,7 @@ def merge_market_data(ftx_data, coingecko_data):
 
     merged.sort_values(by='volume', ascending=False, inplace=True)
     merged.reset_index(drop=True, inplace=True)
-    merged.to_csv('market_data.csv', index=False)
+    merged.to_csv('data/market_data.csv', index=False)
 
 
 if __name__ == '__main__':

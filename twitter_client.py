@@ -1,4 +1,7 @@
 import csv
+import json
+
+import pandas as pd
 from TwitterAPI import TwitterAPI, TwitterOAuth
 
 # API reference index https://developer.twitter.com/en/docs/twitter-api/api-reference-index
@@ -11,14 +14,15 @@ from TwitterAPI import TwitterAPI, TwitterOAuth
 USER_LOOKUP_URL = 'users/by/username/:<username>'
 USER_TIMELINE_URL = 'users/:<id>/tweets'
 
-o = TwitterOAuth.read_file('twitter_secrets.txt')
-api = TwitterAPI(o.consumer_key, o.consumer_secret, o.access_token_key, o.access_token_secret, api_version='2')
+o = TwitterOAuth.read_file('secrets/twitter_secrets.txt')
+api = TwitterAPI(o.consumer_key, o.consumer_secret,
+                 o.access_token_key, o.access_token_secret, api_version='2')
 
 
 def user_lookup():
 
     usernames = []
-    with open('usernames.txt', 'r') as f:
+    with open('data/usernames.txt', 'r') as f:
         usernames = f.read().splitlines()
 
     user_data_list = []
@@ -30,7 +34,7 @@ def user_lookup():
 
         print(r.get_quota())
 
-    with open('twitter_users.csv', 'w+', encoding='UTF8', newline='') as f:
+    with open('data/twitter_users.csv', 'w+', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
         headers = ['id', 'name', 'username']
         writer.writerow(headers)

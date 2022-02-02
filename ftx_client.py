@@ -27,5 +27,5 @@ def get_ftx_market_data():
     fd.replace({'SHIB-PERP': 'KSHIB-PERP', 'SOS-PERP': 'KSOS-PERP'}, inplace=True)
 
     fd.reset_index(drop=True, inplace=True)
-    fd.to_csv('ftx_data.csv', index=False)
+    fd.to_csv('data/ftx_data.csv', index=False)
     return fd

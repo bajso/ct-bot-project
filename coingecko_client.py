@@ -24,5 +24,5 @@ def get_coingecko_data():
     cd = cd[~cd['name'].isin(rogue_tickers)]
 
     cd.reset_index(drop=True, inplace=True)
-    cd.to_csv('coingecko_data.csv', index=False)
+    cd.to_csv('data/coingecko_data.csv', index=False)
     return cd
