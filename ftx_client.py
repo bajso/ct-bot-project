@@ -12,20 +12,17 @@ def get_ftx_market_data():
     url = f'{FTX_URL}/markets'
     markets = requests.get(url).json()
 
-    df = pd.DataFrame(markets['result'])
+    fd = pd.DataFrame(markets['result'])
     # only consider perpertual futures
-    df = df[df['type'] == 'future']
-    df = df[df['name'].str.contains('PERP')]
+    fd = fd[fd['type'] == 'future']
+    fd = fd[fd['name'].str.contains('PERP')]
     # with volume > 5M USD per day
-    df.sort_values(by='volumeUsd24h', ascending=False, inplace=True)
-    df = df[df['volumeUsd24h'] > 5000000]
-    df = df[['name', 'volumeUsd24h']]
-    df.columns = ['ticker', 'volume']
-    df.set_index('ticker', inplace=True)
-    # drop specific perpetuals
-    df.drop(index_tickers, inplace=True, errors='ignore')
+    fd.sort_values(by='volumeUsd24h', ascending=False, inplace=True)
+    fd = fd[fd['volumeUsd24h'] > 5000000]
+    fd = fd[['name', 'volumeUsd24h']]
+    fd.columns = ['ticker', 'volume']
+    # drop index tickers
+    fd.drop(index_tickers, inplace=True, errors='ignore')
 
-    df.to_csv('ftx_market_data.csv')
-
-
-get_ftx_market_data()
+    fd.to_csv('ftx_data.csv', index=False)
+    return fd
