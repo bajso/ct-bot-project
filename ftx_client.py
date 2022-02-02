@@ -22,7 +22,7 @@ def get_ftx_market_data():
     fd = fd[['name', 'volumeUsd24h']]
     fd.columns = ['ticker', 'volume']
     # drop index tickers
-    fd.drop(index_tickers, inplace=True, errors='ignore')
+    fd = fd[~fd['ticker'].isin(index_tickers)]
 
     fd.to_csv('ftx_data.csv', index=False)
     return fd

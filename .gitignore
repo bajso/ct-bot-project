@@ -2,3 +2,4 @@ twitter_secrets.txt
 ftx_secrets.txt
 .vscode/settings.json
 *.pyc
+daily_script.bat
