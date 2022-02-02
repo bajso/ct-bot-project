@@ -11,7 +11,11 @@ def merge_market_data(ftx_data, coingecko_data):
 
     merged = pd.merge(coingecko_data, ftx_data, on='symbol', how='inner')
 
+    # exclude BTC and ETH as random tweets don't move them
+    merged.drop(merged[merged['symbol'].isin(['btc', 'eth'])].index, inplace=True)
+
     merged.sort_values(by='volume', ascending=False, inplace=True)
+    merged.reset_index(drop=True, inplace=True)
     merged.to_csv('market_data.csv', index=False)
 
 

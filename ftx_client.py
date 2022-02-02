@@ -23,6 +23,9 @@ def get_ftx_market_data():
     fd.columns = ['ticker', 'volume']
     # drop index tickers
     fd = fd[~fd['ticker'].isin(index_tickers)]
+    # replace SHIB, SOS with their K* alternative (contract size limit)
+    fd.replace({'SHIB-PERP': 'KSHIB-PERP', 'SOS-PERP': 'KSOS-PERP'}, inplace=True)
 
+    fd.reset_index(drop=True, inplace=True)
     fd.to_csv('ftx_data.csv', index=False)
     return fd
