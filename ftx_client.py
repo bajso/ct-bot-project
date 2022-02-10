@@ -2,10 +2,10 @@ import os
 
 import pandas as pd
 
-from client import FtxClient
+from client import FtxClient as ftx_client
 
 
-class Client:
+class FTXClient:
 
     _FTX_SECRETS_PATH = 'secrets/ftx.txt'
 
@@ -13,37 +13,38 @@ class Client:
         self._configure_client()
 
     def _configure_client(self) -> None:
-        ftx_key, ftx_secret = '', ''
+        ftx_api_key, ftx_api_secret = '', ''
         if os.path.exists(self._FTX_SECRETS_PATH):
             with open(self._FTX_SECRETS_PATH, 'r', encoding='UTF8') as f:
                 for line in f:
                     if 'api_key' in line:
-                        ftx_key = line.split('=')[1].strip()
+                        ftx_api_key = line.split('=')[1].strip()
                     if 'api_secret' in line:
-                        ftx_secret = line.split('=')[1].strip()
+                        ftx_api_secret = line.split('=')[1].strip()
 
-        if (not os.path.exists(self._FTX_SECRETS_PATH) or (ftx_key == '' and ftx_secret == '')):
+        if (not os.path.exists(self._FTX_SECRETS_PATH) or (ftx_api_key == '' and ftx_api_secret == '')):
             print("Configure FTX client")
-            ftx_key = input("FTX API KEY:")
-            ftx_secret = input("FTX API SECRET:")
+            ftx_api_key = input("API KEY:")
+            ftx_api_secret = input("API SECRET:")
 
         subaccount = input("Specify FTX subaccount or leave blank to use the main account:")
 
         response = None
         while response is None:
             try:
-                client = FtxClient(ftx_key, ftx_secret, subaccount)
+                client = ftx_client(ftx_api_key, ftx_api_secret, subaccount)
                 response = client.get_account_info()
             except Exception as client_exception:
                 print(f"Error occured: {client_exception}\n\nPlease try again ...")
                 if 'subaccount' in str(client_exception):
                     subaccount = input("Specify FTX subaccount or leave blank to use the main account:")
                 else:
-                    ftx_key = input("FTX API KEY:")
-                    ftx_secret = input("FTX API SECRET:")
+                    ftx_api_key = input("API KEY:")
+                    ftx_api_secret = input("API SECRET:")
 
         with open(self._FTX_SECRETS_PATH, 'w+', encoding='UTF8') as f:
-            f.write(f"api_key={ftx_key}\napi_secret={ftx_secret}")
+            f.write(f"api_key={ftx_api_key}\n")
+            f.write(f"api_secret={ftx_api_secret}")
 
         self._client = client
 
