@@ -1,14 +1,13 @@
 # courtesy of FTX
 # https://github.com/ftexchange/ftx/blob/master/rest/client.py
 
+import hmac
 import time
 import urllib.parse
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
 
-from requests import Request, Session, Response
-import hmac
 from ciso8601 import parse_datetime
-
+from requests import Request, Response, Session
 
 
 class FtxClient:
@@ -76,10 +75,10 @@ class FtxClient:
 
     def get_open_orders(self, market: str = None) -> List[dict]:
         return self._get(f'orders', {'market': market})
-    
+
     def get_order_history(self, market: str = None, side: str = None, order_type: str = None, start_time: float = None, end_time: float = None) -> List[dict]:
         return self._get(f'orders/history', {'market': market, 'side': side, 'orderType': order_type, 'start_time': start_time, 'end_time': end_time})
-        
+
     def get_conditional_order_history(self, market: str = None, side: str = None, type: str = None, order_type: str = None, start_time: float = None, end_time: float = None) -> List[dict]:
         return self._get(f'conditional_orders/history', {'market': market, 'side': side, 'type': type, 'orderType': order_type, 'start_time': start_time, 'end_time': end_time})
 
