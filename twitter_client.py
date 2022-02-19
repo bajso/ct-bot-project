@@ -7,7 +7,8 @@ from typing import List
 
 import numpy as np
 import pandas as pd
-from TwitterAPI import TwitterAPI, TwitterOAuth
+from TwitterAPI import (OAuthType, TwitterAPI, TwitterConnectionError,
+                        TwitterOAuth, TwitterRequestError)
 
 # API reference index https://developer.twitter.com/en/docs/twitter-api/api-reference-index
 # API rate limits https://developer.twitter.com/en/docs/twitter-api/rate-limits
@@ -23,6 +24,8 @@ class TwitterClient:
     _USERNAMES_PATH = 'data/usernames.txt'
     _USER_LOOKUP_URL = 'users/by/username/:<username>'
     _USER_TIMELINE_URL = 'users/:<id>/tweets'
+    _STREAM_RULES_URL = 'tweets/search/stream/rules'
+    _STREAM_URL = 'tweets/search/stream'
 
     def __init__(self) -> None:
         self._configure_client()
@@ -39,6 +42,7 @@ class TwitterClient:
                                       consumer_secret=secrets.consumer_secret,
                                       access_token_key=secrets.access_token_key,
                                       access_token_secret=secrets.access_token_secret,
+                                      auth_type=OAuthType.OAUTH2,
                                       api_version='2')
         except Exception as client_exception:
             print(f"Error occurred: {client_exception}\n\nPlease try again ...")
@@ -55,13 +59,14 @@ class TwitterClient:
             f.write(f"access_token_key={access_token_key}\n")
             f.write(f"access_token_secret={access_token_secret}")
 
-    def _get_json(self, response: str) -> json:
-        return json.loads(response.text)
+    #
+    # REST endpoints
+    #
 
     def uid_lookup(self, username: str) -> str:
         r = self._client.request(self._USER_LOOKUP_URL.replace('<username>', username))
-        print(r.get_quota())
-        return str(self._get_json(r)['data']['id'])
+        print(f'[{r.status_code}] QUOTA: {r.get_quota()}\n')
+        return str(r.json()['data']['id'])
 
     def uids_lookup(self, save_to_csv: bool = False) -> List:
         uids = []
@@ -80,7 +85,6 @@ class TwitterClient:
                 writer.writerows(rows)
 
     def get_timeline(self, twtr_id: str, from_in_seconds: int = 5) -> json:
-
         # only search for new tweets within last <from_in_seconds> seconds
         ts_now = datetime.now(timezone.utc)
         ts = (ts_now - timedelta(seconds=from_in_seconds)).isoformat(timespec='seconds')
@@ -88,16 +92,55 @@ class TwitterClient:
         r = self._client.request(resource=self._USER_TIMELINE_URL.replace('<id>', str(twtr_id)),
                                  params={'start_time': f'{ts}'})
 
-        print(r.get_quota())
+        print(f'[{r.status_code}] QUOTA: {r.get_quota()}\n')
 
-        tweets = self._get_json(r)
+        tweets = r.json()
         if tweets['meta']['result_count'] == 0:
             return []
 
         return tweets['data']
 
-    def parse_tweets(self, tweets: json, market_data: pd.DataFrame) -> List[str]:
+    #
+    # Streaming endpoints
+    #
 
+    def configure_stream_rules(self, value: str) -> None:
+        # only stream from tier10k (news aggregator acccount)
+        r = self._client.request(resource=self._STREAM_RULES_URL, params={'add': [{'value': value}]})
+        print(f'[{r.status_code}] RULE ADDED: {json.dumps(r.json(), indent=2)}\n')
+
+    def get_stream_rules(self) -> None:
+        r = self._client.request(resource=self._STREAM_RULES_URL, method_override='GET')
+        print(f'[{r.status_code}] RULES: {json.dumps(r.json(), indent=2)}\n')
+
+    def delete_stream_rule(self, rule_ids: List[str]) -> None:
+        r = self._client.request(resource=self._STREAM_RULES_URL, params={'delete': {'ids': [*rule_ids]}})
+        print(f'[{r.status_code}] RULES DELETED: {json.dumps(r.json(), indent=2)}\n')
+
+    def start_stream(self) -> None:
+        try:
+            r = self._client.request(resource=self._STREAM_URL)
+            print(f'[{r.status_code}] START...')
+            if r.status_code != 200:
+                exit()
+            for item in r:
+                print(json.dumps(item, indent=2))
+        except KeyboardInterrupt:
+            print('\nDone!')
+        except TwitterRequestError as request_e:
+            print(f'\n{request_e.status_code}')
+            for msg in iter(request_e):
+                print(msg)
+        except TwitterConnectionError as connection_e:
+            print(connection_e)
+        except Exception as e:
+            print(e)
+
+    #
+    # Utils
+    #
+
+    def parse_tweets(self, tweets: json, market_data: pd.DataFrame) -> List[str]:
         tickers = set()
         for twt in tweets:
             text = twt['text'].lower()
