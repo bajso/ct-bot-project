@@ -41,7 +41,7 @@ class TwitterClient:
                                       access_token_secret=secrets.access_token_secret,
                                       api_version='2')
         except Exception as client_exception:
-            print(f"Error occured: {client_exception}\n\nPlease try again ...")
+            print(f"Error occurred: {client_exception}\n\nPlease try again ...")
             self._write_credentials()
 
     def _write_credentials(self) -> None:

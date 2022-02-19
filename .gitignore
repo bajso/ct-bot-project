@@ -1,4 +1,3 @@
-.vscode/settings.json
+.vscode/*
 *.pyc
 secrets/*
-daily_script.bat
